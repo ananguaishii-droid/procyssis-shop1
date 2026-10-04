@@ -1,1 +1,415 @@
-const KEY="procyssis_jobs_v2";let data={};const $=x=>document.getElementById(x);function load(){try{data=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){data={}}render()}function render(){let l=$("list"),a=Object.values(data);l.innerHTML=a.length?"":"<p>ยังไม่มีงาน</p>";a.forEach(j=>{let d=document.createElement("div");d.className="jobrow";d.innerHTML="<div><b>"+j.code+"</b> — "+j.title+"<br><small>"+j.statusText+" · "+j.progress+"%</small></div><button onclick=\"editJob('"+j.code+"')\">แก้ไข</button>";l.appendChild(d)})}function saveJob(){let c=$("fcode").value.trim().toUpperCase();if(!c){$("msg").textContent="กรุณาใส่รหัสงาน";return}let old=data[c],p=Math.max(0,Math.min(100,Number($("fprogress").value)||0)),s={working:"🟢 กำลังทำงาน",waiting:"🟡 รอคิว",paused:"🟠 พักงาน",done:"🔵 เสร็จแล้ว"}[$("fstatus").value];data[c]={code:c,title:$("ftitle").value.trim()||"งาน PROCYSIS SHOP",status:$("fstatus").value,statusText:s,progress:p,message:$("fmessage").value.trim(),view:$("fview").value.trim(),started:old?.started||new Date().toISOString(),updated:new Date().toISOString()};localStorage.setItem(KEY,JSON.stringify(data));$("msg").textContent="บันทึกแล้ว";render()}function editJob(c){let j=data[c];$("fcode").value=j.code;$("ftitle").value=j.title;$("fstatus").value=j.status;$("fprogress").value=j.progress;$("fmessage").value=j.message;$("fview").value=j.view;scrollTo({top:0,behavior:"smooth"})}function clearForm(){["fcode","ftitle","fmessage","fview"].forEach(x=>$(x).value="");$("fprogress").value=0}load();
+const SUPABASE_URL = "https://ywaicpfgqejwfwkvetyj.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
+
+let supabaseClient;
+let currentUser = null;
+
+function initSupabase() {
+  if (typeof supabase === "undefined") {
+    document.getElementById("loginMsg").textContent =
+      "กำลังโหลด Supabase...";
+    return;
+  }
+
+  supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+}
+
+
+// =========================
+// LOGIN
+// =========================
+
+async function login() {
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const msg =
+    document.getElementById("loginMsg");
+
+  if (!email || !password) {
+    msg.textContent = "กรุณากรอกอีเมลและรหัสผ่าน";
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if (error) {
+    msg.textContent =
+      "เข้าสู่ระบบไม่สำเร็จ: " + error.message;
+    return;
+  }
+
+  currentUser = data.user;
+
+  document.getElementById("loginBox").style.display =
+    "none";
+
+  document.getElementById("adminPanel").style.display =
+    "block";
+
+  loadJobs();
+}
+
+
+// =========================
+// LOGOUT
+// =========================
+
+async function logout() {
+
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+
+  document.getElementById("adminPanel").style.display =
+    "none";
+
+  document.getElementById("loginBox").style.display =
+    "block";
+}
+
+
+// =========================
+// CHECK LOGIN
+// =========================
+
+async function checkLogin() {
+
+  const { data } =
+    await supabaseClient.auth.getSession();
+
+  if (data.session) {
+
+    currentUser = data.session.user;
+
+    document.getElementById("loginBox").style.display =
+      "none";
+
+    document.getElementById("adminPanel").style.display =
+      "block";
+
+    loadJobs();
+  }
+}
+
+
+// =========================
+// IMAGE PREVIEW
+// =========================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const fileInput =
+    document.getElementById("imageFile");
+
+  if (fileInput) {
+
+    fileInput.addEventListener("change", () => {
+
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const url =
+        URL.createObjectURL(file);
+
+      document.getElementById("imagePreview").innerHTML = `
+        <img
+          src="${url}"
+          style="
+            max-width:100%;
+            max-height:300px;
+            border-radius:12px;
+            margin-top:10px;
+          ">
+      `;
+    });
+
+  }
+
+});
+
+
+// =========================
+// UPLOAD IMAGE
+// =========================
+
+async function uploadImage(file, code) {
+
+  if (!file) return null;
+
+  const extension =
+    file.name.split(".").pop().toLowerCase();
+
+  const fileName =
+    `jobs/${code}-${Date.now()}.${extension}`;
+
+  const { error: uploadError } =
+    await supabaseClient.storage
+      .from("job-images")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type
+      });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } =
+    supabaseClient.storage
+      .from("job-images")
+      .getPublicUrl(fileName);
+
+  return data.publicUrl;
+}
+
+
+// =========================
+// SAVE JOB
+// =========================
+
+async function saveJob() {
+
+  const msg =
+    document.getElementById("msg");
+
+  try {
+
+    if (!currentUser) {
+      msg.textContent =
+        "กรุณาเข้าสู่ระบบก่อน";
+      return;
+    }
+
+    const code =
+      document.getElementById("fcode").value.trim();
+
+    const title =
+      document.getElementById("ftitle").value.trim();
+
+    const status =
+      document.getElementById("fstatus").value;
+
+    const progress =
+      Number(
+        document.getElementById("fprogress").value
+      );
+
+    const message =
+      document.getElementById("fmessage").value.trim();
+
+    const file =
+      document.getElementById("imageFile").files[0];
+
+    if (!code || !title) {
+      msg.textContent =
+        "กรุณากรอกรหัสงานและชื่องาน";
+      return;
+    }
+
+    msg.textContent =
+      "กำลังบันทึก...";
+
+    let imageUrl = null;
+
+    if (file) {
+
+      msg.textContent =
+        "กำลังอัปโหลดรูป...";
+
+      imageUrl =
+        await uploadImage(file, code);
+    }
+
+    const { error } =
+      await supabaseClient
+        .from("jobs")
+        .upsert({
+
+          code: code,
+          title: title,
+          status: status,
+          progress: progress,
+          message: message,
+          view_url: imageUrl,
+
+          updated_at:
+            new Date().toISOString()
+
+        }, {
+          onConflict: "code"
+        });
+
+    if (error) {
+      throw error;
+    }
+
+    msg.textContent =
+      "✅ บันทึกงานเรียบร้อย";
+
+    clearForm();
+
+    loadJobs();
+
+  } catch (error) {
+
+    console.error(error);
+
+    msg.textContent =
+      "❌ เกิดข้อผิดพลาด: " +
+      error.message;
+  }
+}
+
+
+// =========================
+// LOAD JOBS
+// =========================
+
+async function loadJobs() {
+
+  const list =
+    document.getElementById("list");
+
+  list.innerHTML =
+    "กำลังโหลด...";
+
+  const { data, error } =
+    await supabaseClient
+      .from("jobs")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+  if (error) {
+
+    list.innerHTML =
+      "โหลดข้อมูลไม่สำเร็จ";
+
+    console.error(error);
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML =
+      "ยังไม่มีงาน";
+
+    return;
+  }
+
+  list.innerHTML =
+    data.map(job => `
+
+      <div class="card"
+           style="margin-top:15px;">
+
+        <b>${escapeHtml(job.code)}</b>
+
+        <div>
+          ${escapeHtml(job.title)}
+        </div>
+
+        <div>
+          สถานะ: ${escapeHtml(job.status)}
+        </div>
+
+        <div>
+          ความคืบหน้า: ${job.progress}%
+        </div>
+
+        <div>
+          ${escapeHtml(job.message || "")}
+        </div>
+
+        ${
+          job.view_url
+          ? `
+            <img
+              src="${job.view_url}"
+              style="
+                max-width:100%;
+                max-height:250px;
+                margin-top:10px;
+                border-radius:10px;
+              ">
+          `
+          : ""
+        }
+
+      </div>
+
+    `).join("");
+}
+
+
+// =========================
+// CLEAR FORM
+// =========================
+
+function clearForm() {
+
+  document.getElementById("fcode").value = "";
+  document.getElementById("ftitle").value = "";
+  document.getElementById("fstatus").value = "working";
+  document.getElementById("fprogress").value = 0;
+  document.getElementById("fmessage").value = "";
+  document.getElementById("imageFile").value = "";
+
+  document.getElementById("imagePreview").innerHTML =
+    "";
+
+  document.getElementById("msg").textContent =
+    "";
+}
+
+
+// =========================
+// ESCAPE HTML
+// =========================
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+// =========================
+// START
+// =========================
+
+const script =
+  document.createElement("script");
+
+script.src =
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+
+script.onload = () => {
+
+  initSupabase();
+
+  checkLogin();
+
+};
+
+document.head.appendChild(script);
