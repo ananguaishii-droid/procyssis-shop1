@@ -71,7 +71,10 @@ async function findJob() {
   if (!code) {
 
     result.innerHTML = `
-      <div class="card">
+      <div
+        class="card"
+        style="color:#222222;"
+      >
 
         <h3>⚠️ กรุณากรอกรหัสงาน</h3>
 
@@ -88,7 +91,10 @@ async function findJob() {
 
 
   result.innerHTML = `
-    <div class="card">
+    <div
+      class="card"
+      style="color:#222222;"
+    >
 
       🔄 กำลังค้นหางาน
       <b>${escapeHtml(code)}</b>...
@@ -121,7 +127,10 @@ async function findJob() {
 
 
       result.innerHTML = `
-        <div class="card">
+        <div
+          class="card"
+          style="color:#222222;"
+        >
 
           <h3>❌ เกิดข้อผิดพลาด</h3>
 
@@ -141,7 +150,10 @@ async function findJob() {
     if (!data) {
 
       result.innerHTML = `
-        <div class="card">
+        <div
+          class="card"
+          style="color:#222222;"
+        >
 
           <h3>❌ ไม่พบงาน</h3>
 
@@ -167,7 +179,10 @@ async function findJob() {
 
 
     result.innerHTML = `
-      <div class="card">
+      <div
+        class="card"
+        style="color:#222222;"
+      >
 
         <h3>❌ ไม่สามารถโหลดงานได้</h3>
 
@@ -244,11 +259,20 @@ function showJob(job) {
 
   result.innerHTML = `
 
-    <div class="card">
+    <div
+      class="card"
+      style="
+        color:#222222;
+      "
+    >
 
       <!-- TITLE -->
 
-      <h2>
+      <h2
+        style="
+          color:#111111;
+        "
+      >
         ${escapeHtml(
           job.title
         )}
@@ -257,7 +281,11 @@ function showJob(job) {
 
       <!-- CODE -->
 
-      <p>
+      <p
+        style="
+          color:#222222;
+        "
+      >
 
         รหัสงาน:
         <b>
@@ -271,7 +299,11 @@ function showJob(job) {
 
       <!-- STATUS -->
 
-      <p>
+      <p
+        style="
+          color:#222222;
+        "
+      >
 
         สถานะ:
         <b>
@@ -285,7 +317,11 @@ function showJob(job) {
 
       <!-- PROGRESS -->
 
-      <p>
+      <p
+        style="
+          color:#222222;
+        "
+      >
 
         ความคืบหน้า:
         <b>
@@ -294,6 +330,8 @@ function showJob(job) {
 
       </p>
 
+
+      <!-- PROGRESS BAR -->
 
       <div
         style="
@@ -326,8 +364,9 @@ function showJob(job) {
           margin-top:20px;
           padding:18px;
           background:#f5f8fc;
+          color:#222222;
           border-radius:15px;
-          border:1px solid #e5eaf0;
+          border:1px solid #dfe5ec;
         "
       >
 
@@ -335,7 +374,8 @@ function showJob(job) {
           style="
             font-weight:bold;
             font-size:17px;
-            margin-bottom:8px;
+            margin-bottom:10px;
+            color:#111111;
           "
         >
           📝 ข้อความจากแอดมิน
@@ -346,7 +386,9 @@ function showJob(job) {
           style="
             white-space:pre-wrap;
             word-break:break-word;
-            line-height:1.6;
+            line-height:1.7;
+            color:#222222;
+            font-size:15px;
           "
         >
           ${escapeHtml(
@@ -367,7 +409,7 @@ function showJob(job) {
       <p
         style="
           margin-top:18px;
-          opacity:.65;
+          color:#666666;
           font-size:13px;
         "
       >
@@ -538,33 +580,7 @@ supabaseClient
       }
 
 
-      /*
-       * ถ้าเป็นงานที่กำลังดูอยู่
-       * ให้โหลดข้อมูลใหม่ทันที
-       */
-
-      const changedJob =
-        payload.new;
-
-
-      if (
-        changedJob &&
-        changedJob.code &&
-        String(
-          changedJob.code
-        ) !== String(
-          currentCode
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      /*
-       * ถ้างานถูกลบ
-       */
+      /* งานถูกลบ */
 
       if (
         payload.eventType ===
@@ -582,9 +598,16 @@ supabaseClient
 
           result.innerHTML = `
 
-            <div class="card">
+            <div
+              class="card"
+              style="
+                color:#222222;
+              "
+            >
 
-              <h3>🗑️ งานนี้ถูกลบแล้ว</h3>
+              <h3>
+                🗑️ งานนี้ถูกลบแล้ว
+              </h3>
 
               <p>
                 ไม่พบข้อมูลงาน
@@ -604,6 +627,25 @@ supabaseClient
         return;
       }
 
+
+      /* ตรวจเฉพาะงานที่กำลังดู */
+
+      if (
+        payload.new &&
+        payload.new.code &&
+        String(
+          payload.new.code
+        ) !== String(
+          currentCode
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      /* โหลดข้อมูลใหม่ */
 
       findJob();
 
