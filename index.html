@@ -1,1 +1,107 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PROCYSIS SHOP</title><link rel="stylesheet" href="style.css"></head><body><header><b>PROCYSIS <i>SHOP</i></b><a href="admin.html">Admin</a></header><main><section class="hero"><small>LIVE JOB TRACKING</small><h1>ติดตามงานของคุณแบบ <span>Real-time</span></h1><p>กรอกรหัสงานเพื่อดูสถานะ ความคืบหน้า และการอัปเดตจาก PROCYSIS SHOP</p></section><section class="card"><label>รหัสงาน</label><div class="row"><input id="code" placeholder="เช่น PCS-1001"><button onclick="findJob()">ดูงาน</button></div><small>ตัวอย่าง: PCS-1001</small></section><section id="result" class="hidden"></section></main><footer>© PROCYSIS SHOP</footer><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1">
+
+  <title>PROCYSIS SHOP</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <b>
+    PROCYSIS <i>SHOP</i>
+  </b>
+
+  <a href="admin.html">
+    แอดมิน
+  </a>
+
+</header>
+
+
+<main>
+
+
+  <section class="hero">
+
+    <small>
+      PROCYSIS SHOP
+    </small>
+
+    <h1>
+      ตรวจสอบงาน
+      <span>Real-time</span>
+    </h1>
+
+    <p>
+      กรอกรหัสงานเพื่อดูสถานะงานของคุณ
+    </p>
+
+  </section>
+
+
+  <section class="card">
+
+    <label>
+
+      รหัสงาน
+
+      <input
+        id="code"
+        type="text"
+        placeholder="เช่น PCS-1001"
+        autocomplete="off">
+
+    </label>
+
+
+    <button
+      onclick="findJob()">
+
+      🔍 ตรวจสอบงาน
+
+    </button>
+
+
+    <div
+      id="result"
+      style="margin-top:20px;">
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<!-- SUPABASE -->
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
+<!-- APP -->
+
+<script src="app.js"></script>
+
+
+</body>
+
+</html>
