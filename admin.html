@@ -22,12 +22,18 @@
 
     <label>
       อีเมล
-      <input id="email" type="email" placeholder="อีเมลแอดมิน">
+      <input
+        id="email"
+        type="email"
+        placeholder="อีเมลแอดมิน">
     </label>
 
     <label>
       รหัสผ่าน
-      <input id="password" type="password" placeholder="รหัสผ่าน">
+      <input
+        id="password"
+        type="password"
+        placeholder="รหัสผ่าน">
     </label>
 
     <button onclick="login()">เข้าสู่ระบบ</button>
@@ -36,46 +42,66 @@
   </section>
 
 
-  <!-- ADMIN PANEL -->
+  <!-- ADMIN -->
   <div id="adminPanel" style="display:none;">
 
     <section class="hero">
       <small>ADMIN CONTROL</small>
       <h1>จัดการงาน <span>Real-time</span></h1>
 
-      <button class="dark" onclick="logout()">ออกจากระบบ</button>
+      <button class="dark" onclick="logout()">
+        ออกจากระบบ
+      </button>
     </section>
 
 
-    <!-- JOB FORM -->
+    <!-- JOB -->
     <section class="card">
 
       <div class="grid">
 
         <label>
           รหัสงาน
-          <input id="fcode" placeholder="PCS-1001">
+          <input
+            id="fcode"
+            placeholder="PCS-1001">
         </label>
+
 
         <label>
           ชื่องาน
-          <input id="ftitle" placeholder="Roblox งานลูกค้า">
+          <input
+            id="ftitle"
+            placeholder="Roblox งานลูกค้า">
         </label>
+
 
         <label>
           สถานะ
 
           <select id="fstatus">
-            <option value="working">🟢 กำลังทำงาน</option>
-            <option value="waiting">🟡 รอคิว</option>
-            <option value="paused">🟠 พักงาน</option>
-            <option value="done">🔵 เสร็จแล้ว</option>
-          </select>
+            <option value="working">
+              🟢 กำลังทำงาน
+            </option>
 
+            <option value="waiting">
+              🟡 รอคิว
+            </option>
+
+            <option value="paused">
+              🟠 พักงาน
+            </option>
+
+            <option value="done">
+              🔵 เสร็จแล้ว
+            </option>
+          </select>
         </label>
+
 
         <label>
           ความคืบหน้า %
+
           <input
             id="fprogress"
             type="number"
@@ -84,15 +110,17 @@
             value="0">
         </label>
 
+
         <label class="wide">
           ข้อความ
+
           <input
             id="fmessage"
             placeholder="กำลังดำเนินการ...">
         </label>
 
 
-        <!-- IMAGE UPLOAD -->
+        <!-- IMAGE -->
         <label class="wide">
           รูปภาพงาน
 
@@ -102,20 +130,19 @@
             accept="image/*">
 
           <small>
-            เลือกรูปจาก iPad เพื่ออัปโหลดให้ลูกค้าดู
+            เลือกรูปจาก iPad
           </small>
 
           <div id="imagePreview"
-               style="margin-top:10px;"></div>
+               style="margin-top:10px;">
+          </div>
         </label>
 
 
-        <!-- HIDDEN URL -->
         <input
           id="fview"
-          type="hidden"
-          value="">
-          
+          type="hidden">
+
       </div>
 
 
@@ -123,7 +150,9 @@
         💾 บันทึกงาน
       </button>
 
-      <button class="dark" onclick="clearForm()">
+      <button
+        class="dark"
+        onclick="clearForm()">
         ล้าง
       </button>
 
@@ -146,7 +175,10 @@
 </main>
 
 
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ADMIN JS -->
 <script src="admin.js"></script>
 
 </body>
