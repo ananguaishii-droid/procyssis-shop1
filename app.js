@@ -1,204 +1,282 @@
-const SUPABASE_URL = "https://ywaicpfgqejwfwkvetyj.supabase.co/rest/v1/";
-const SUPABASE_KEY = "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
+const SUPABASE_URL =
+  "https://ywaicpfgqejwfwkvetyj.supabase.co";
 
-const script = document.createElement("script");
-script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-script.onload = start;
-document.head.appendChild(script);
+const SUPABASE_KEY =
+  "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
 
-let supabase;
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-async function start() {
-    supabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
 
-    document.getElementById("code").addEventListener("keydown", e => {
-        if (e.key === "Enter") findJob();
-    });
-}
+// =========================
+// ค้นหางาน
+// =========================
 
 async function findJob() {
-    const code = document.getElementById("code").value
-        .trim()
-        .toUpperCase();
 
-    const result = document.getElementById("result");
+  const code =
+    document
+      .getElementById("code")
+      .value
+      .trim();
 
-    if (!code) return;
+  const result =
+    document.getElementById("result");
 
-    const { data, error } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("code", code)
-        .maybeSingle();
 
-    if (error) {
-        result.className = "card err";
-        result.innerHTML = `
-            <h2>เกิดข้อผิดพลาด</h2>
-            <p>${error.message}</p>
-        `;
-        return;
-    }
+  if (!code) {
 
-    if (!data) {
-        result.className = "card err";
-        result.innerHTML = `
-            <h2>ไม่พบงาน</h2>
-            <p>ตรวจสอบรหัสงานอีกครั้ง</p>
-        `;
-        return;
-    }
+    result.innerHTML =
+      "กรุณากรอกรหัสงาน";
 
-    showJob(data);
+    return;
+  }
 
-    // รับการเปลี่ยนแปลงจาก Admin แบบ Real-time
-    supabase
-        .channel("job-" + data.code)
-        .on(
-            "postgres_changes",
-            {
-                event: "*",
-                schema: "public",
-                table: "jobs",
-                filter: "code=eq." + data.code
-            },
-            payload => {
-                if (payload.new) {
-                    showJob(payload.new);
-                }
-            }
-        )
-        .subscribe();
+
+  result.innerHTML =
+    "กำลังค้นหา...";
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("jobs")
+      .select("*")
+      .eq("code", code)
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(error);
+
+    result.innerHTML =
+      "❌ ไม่สามารถค้นหางานได้";
+
+    return;
+  }
+
+
+  if (!data) {
+
+    result.innerHTML =
+      "❌ ไม่พบรหัสงานนี้";
+
+    return;
+  }
+
+
+  showJob(data);
 }
 
-function showJob(j) {
 
-    const result = document.getElementById("result");
+// =========================
+// แสดงงาน
+// =========================
 
-    const status = {
-        working: "🟢 กำลังทำงาน",
-        waiting: "🟡 รอคิว",
-        paused: "🟠 พักงาน",
-        done: "🔵 เสร็จแล้ว"
-    };
+function showJob(job) {
 
-    let view = `
-        <div class="placeholder">
-            <b>ยังไม่มีภาพจาก Redfinger</b>
-            <small>
-                รอการเชื่อมต่อ Redfinger View
-            </small>
-        </div>
+  const result =
+    document.getElementById("result");
+
+
+  let image = "";
+
+
+  if (job.view_url) {
+
+    image = `
+
+      <img
+        src="${job.view_url}"
+        alt="รูปงาน"
+        style="
+          width:100%;
+          max-width:700px;
+          border-radius:15px;
+          margin-top:15px;
+        "
+      >
+
     `;
+  }
 
-    if (j.view_url) {
 
-        if (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(j.view_url)) {
+  result.innerHTML = `
 
-            view = `
-                <img src="${j.view_url}">
-            `;
+    <div class="card">
 
-        } else {
+      <h2>
+        ${escapeHtml(job.title)}
+      </h2>
 
-            view = `
-                <iframe
-                    src="${j.view_url}"
-                    allow="autoplay; fullscreen">
-                </iframe>
-            `;
-        }
-    }
+      <p>
+        รหัสงาน:
+        <b>${escapeHtml(job.code)}</b>
+      </p>
 
-    result.className = "";
+      <p>
+        สถานะ:
+        ${getStatus(job.status)}
+      </p>
 
-    result.innerHTML = `
-        <div class="job">
+      <p>
+        ความคืบหน้า:
+        ${job.progress}%
+      </p>
 
-            <div class="card">
+      <div
+        style="
+          width:100%;
+          background:#eee;
+          height:12px;
+          border-radius:20px;
+          overflow:hidden;
+        "
+      >
 
-                <div class="top">
-                    <h2>${escapeHtml(j.title || "PROCYSIS SHOP")}</h2>
-                    <span class="badge">
-                        ${status[j.status] || j.status || "—"}
-                    </span>
-                </div>
+        <div
+          style="
+            width:${job.progress}%;
+            height:100%;
+            background:#4da6ff;
+          "
+        ></div>
 
-                <small>
-                    ${escapeHtml(j.code)}
-                    · อัปเดต ${formatDate(j.updated_at)}
-                </small>
+      </div>
 
-                <div class="screen">
+      <p>
+        ${escapeHtml(job.message || "")}
+      </p>
 
-                    <div class="screenbar">
-                        <span>● PROCYSIS LIVE VIEW</span>
-                        <span>LIVE</span>
-                    </div>
+      ${image}
 
-                    ${view}
+      <small>
+        อัปเดตล่าสุด:
+        ${formatDate(job.updated_at)}
+      </small>
 
-                </div>
+    </div>
 
-            </div>
-
-            <div class="card">
-
-                <h2>ความคืบหน้า</h2>
-
-                <div class="bar">
-                    <div style="width:${Number(j.progress) || 0}%"></div>
-                </div>
-
-                <div class="pct">
-                    ${Number(j.progress) || 0}%
-                </div>
-
-                <div class="info">
-
-                    <div>
-                        <span>เริ่มงาน</span>
-                        <b>${formatDate(j.created_at)}</b>
-                    </div>
-
-                    <div>
-                        <span>อัปเดตล่าสุด</span>
-                        <b>${formatDate(j.updated_at)}</b>
-                    </div>
-
-                </div>
-
-                <h3>ข้อความจากทีมงาน</h3>
-
-                <div class="message">
-                    ${escapeHtml(j.message || "—")}
-                </div>
-
-            </div>
-
-        </div>
-    `;
+  `;
 }
+
+
+// =========================
+// สถานะ
+// =========================
+
+function getStatus(status) {
+
+  const statusMap = {
+
+    working:
+      "🟢 กำลังทำงาน",
+
+    waiting:
+      "🟡 รอคิว",
+
+    paused:
+      "🟠 พักงาน",
+
+    done:
+      "🔵 เสร็จแล้ว"
+
+  };
+
+
+  return (
+    statusMap[status] ||
+    status
+  );
+}
+
+
+// =========================
+// วันที่
+// =========================
 
 function formatDate(date) {
 
-    if (!date) return "—";
+  if (!date) return "-";
 
-    return new Date(date).toLocaleString("th-TH", {
-        dateStyle: "short",
-        timeStyle: "medium"
-    });
+
+  return new Date(date)
+    .toLocaleString(
+      "th-TH",
+      {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }
+    );
 }
 
-function escapeHtml(text) {
 
-    return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+// =========================
+// ป้องกัน HTML
+// =========================
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
+
+
+// =========================
+// REAL-TIME
+// =========================
+
+supabaseClient
+  .channel("jobs-realtime")
+
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "jobs"
+    },
+    () => {
+
+      const code =
+        document
+          .getElementById("code")
+          .value
+          .trim();
+
+
+      if (code) {
+        findJob();
+      }
+
+    }
+  )
+
+  .subscribe();
