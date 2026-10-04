@@ -4,7 +4,6 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
 
-
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
@@ -14,25 +13,21 @@ const supabaseClient =
 let currentUser = null;
 
 
-// =========================
-// LOGIN
-// =========================
+/* =========================
+   LOGIN
+========================= */
 
 async function login() {
 
   const email =
-    document
-      .getElementById("email")
-      .value
-      .trim();
+    document.getElementById("email").value.trim();
 
   const password =
-    document
-      .getElementById("password")
-      .value;
+    document.getElementById("password").value;
 
   const msg =
     document.getElementById("loginMsg");
+
 
   if (!email || !password) {
 
@@ -48,13 +43,12 @@ async function login() {
 
 
   const { data, error } =
-    await supabaseClient.auth
-      .signInWithPassword({
+    await supabaseClient.auth.signInWithPassword({
 
-        email: email,
-        password: password
+      email: email,
+      password: password
 
-      });
+    });
 
 
   if (error) {
@@ -72,26 +66,27 @@ async function login() {
   currentUser = data.user;
 
 
-  document
-    .getElementById("loginBox")
-    .style.display = "none";
+  document.getElementById(
+    "loginBox"
+  ).style.display = "none";
 
 
-  document
-    .getElementById("adminPanel")
-    .style.display = "block";
+  document.getElementById(
+    "adminPanel"
+  ).style.display = "block";
 
 
   msg.textContent = "";
 
 
   loadJobs();
+
 }
 
 
-// =========================
-// LOGOUT
-// =========================
+/* =========================
+   LOGOUT
+========================= */
 
 async function logout() {
 
@@ -100,36 +95,36 @@ async function logout() {
   currentUser = null;
 
 
-  document
-    .getElementById("adminPanel")
-    .style.display = "none";
+  document.getElementById(
+    "adminPanel"
+  ).style.display = "none";
 
 
-  document
-    .getElementById("loginBox")
-    .style.display = "block";
+  document.getElementById(
+    "loginBox"
+  ).style.display = "block";
 
 
-  document
-    .getElementById("email")
-    .value = "";
+  document.getElementById(
+    "email"
+  ).value = "";
 
 
-  document
-    .getElementById("password")
-    .value = "";
+  document.getElementById(
+    "password"
+  ).value = "";
+
 }
 
 
-// =========================
-// CHECK LOGIN
-// =========================
+/* =========================
+   CHECK LOGIN
+========================= */
 
 async function checkLogin() {
 
   const { data, error } =
-    await supabaseClient.auth
-      .getSession();
+    await supabaseClient.auth.getSession();
 
 
   if (error) {
@@ -146,24 +141,26 @@ async function checkLogin() {
       data.session.user;
 
 
-    document
-      .getElementById("loginBox")
-      .style.display = "none";
+    document.getElementById(
+      "loginBox"
+    ).style.display = "none";
 
 
-    document
-      .getElementById("adminPanel")
-      .style.display = "block";
+    document.getElementById(
+      "adminPanel"
+    ).style.display = "block";
 
 
     loadJobs();
+
   }
+
 }
 
 
-// =========================
-// IMAGE PREVIEW
-// =========================
+/* =========================
+   IMAGE PREVIEW
+========================= */
 
 document
   .getElementById("imageFile")
@@ -201,16 +198,18 @@ document
             max-height:300px;
             border-radius:12px;
             margin-top:10px;
-          ">
+          "
+        >
 
       `;
+
     }
   );
 
 
-// =========================
-// UPLOAD IMAGE
-// =========================
+/* =========================
+   UPLOAD IMAGE
+========================= */
 
 async function uploadImage(
   file,
@@ -218,7 +217,6 @@ async function uploadImage(
 ) {
 
   if (!file) {
-
     return null;
   }
 
@@ -240,8 +238,7 @@ async function uploadImage(
 
 
   const { error } =
-    await supabaseClient
-      .storage
+    await supabaseClient.storage
       .from("job-images")
       .upload(
         fileName,
@@ -255,14 +252,12 @@ async function uploadImage(
 
 
   if (error) {
-
     throw error;
   }
 
 
   const { data } =
-    supabaseClient
-      .storage
+    supabaseClient.storage
       .from("job-images")
       .getPublicUrl(
         fileName
@@ -270,12 +265,13 @@ async function uploadImage(
 
 
   return data.publicUrl;
+
 }
 
 
-// =========================
-// SAVE JOB
-// =========================
+/* =========================
+   SAVE JOB
+========================= */
 
 async function saveJob() {
 
@@ -362,6 +358,7 @@ async function saveJob() {
           file,
           code
         );
+
     }
 
 
@@ -371,14 +368,23 @@ async function saveJob() {
         .upsert(
 
           {
+
             code: code,
+
             title: title,
+
             status: status,
+
             progress: progress,
+
             message: message,
+
             view_url: imageUrl,
+
             updated_at:
-              new Date().toISOString()
+              new Date()
+                .toISOString()
+
           },
 
           {
@@ -389,7 +395,6 @@ async function saveJob() {
 
 
     if (error) {
-
       throw error;
     }
 
@@ -403,20 +408,24 @@ async function saveJob() {
     loadJobs();
 
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
     msg.textContent =
       "❌ เกิดข้อผิดพลาด: " +
       error.message;
+
   }
+
 }
 
 
-// =========================
-// LOAD JOBS
-// =========================
+/* =========================
+   LOAD JOBS
+========================= */
 
 async function loadJobs() {
 
@@ -469,25 +478,32 @@ async function loadJobs() {
 
           <div
             class="card"
-            style="margin-top:15px;">
+            style="
+              margin-top:15px;
+            "
+          >
 
             <b>
               ${escapeHtml(job.code)}
             </b>
 
+
             <div>
               ${escapeHtml(job.title)}
             </div>
 
+
             <div>
               สถานะ:
-              ${escapeHtml(job.status)}
+              ${getStatus(job.status)}
             </div>
+
 
             <div>
               ความคืบหน้า:
               ${job.progress}%
             </div>
+
 
             <div>
               ${escapeHtml(
@@ -495,78 +511,197 @@ async function loadJobs() {
               )}
             </div>
 
+
             ${
               job.view_url
-
-              ? `
+              ?
+              `
 
                 <img
-                  src="${job.view_url}"
+                  src="${escapeHtml(
+                    job.view_url
+                  )}"
                   style="
                     max-width:100%;
                     max-height:250px;
                     margin-top:10px;
                     border-radius:10px;
-                  ">
+                  "
+                >
 
               `
-
-              : ""
+              :
+              ""
             }
+
+
+            <button
+              class="dark"
+              style="
+                margin-top:15px;
+                background:#e53935;
+              "
+              onclick="deleteJob(${job.id}, '${escapeHtml(job.code)}')"
+            >
+              🗑️ ลบงาน
+            </button>
 
           </div>
 
         `;
+
       })
       .join("");
+
 }
 
 
-// =========================
-// CLEAR
-// =========================
+/* =========================
+   DELETE JOB
+========================= */
+
+async function deleteJob(
+  id,
+  code
+) {
+
+  const confirmDelete =
+    confirm(
+      "ต้องการลบงาน " +
+      code +
+      " ใช่หรือไม่?"
+    );
+
+
+  if (!confirmDelete) {
+    return;
+  }
+
+
+  try {
+
+    const { error } =
+      await supabaseClient
+        .from("jobs")
+        .delete()
+        .eq("id", id);
+
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "❌ ลบงานไม่สำเร็จ\n\n" +
+        error.message
+      );
+
+      return;
+    }
+
+
+    alert(
+      "✅ ลบงาน " +
+      code +
+      " เรียบร้อยแล้ว"
+    );
+
+
+    loadJobs();
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    alert(
+      "❌ เกิดข้อผิดพลาด\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   CLEAR FORM
+========================= */
 
 function clearForm() {
 
-  document
-    .getElementById("fcode")
-    .value = "";
+  document.getElementById(
+    "fcode"
+  ).value = "";
 
 
-  document
-    .getElementById("ftitle")
-    .value = "";
+  document.getElementById(
+    "ftitle"
+  ).value = "";
 
 
-  document
-    .getElementById("fstatus")
-    .value = "working";
+  document.getElementById(
+    "fstatus"
+  ).value = "working";
 
 
-  document
-    .getElementById("fprogress")
-    .value = 0;
+  document.getElementById(
+    "fprogress"
+  ).value = 0;
 
 
-  document
-    .getElementById("fmessage")
-    .value = "";
+  document.getElementById(
+    "fmessage"
+  ).value = "";
 
 
-  document
-    .getElementById("imageFile")
-    .value = "";
+  document.getElementById(
+    "imageFile"
+  ).value = "";
 
 
-  document
-    .getElementById("imagePreview")
-    .innerHTML = "";
+  document.getElementById(
+    "imagePreview"
+  ).innerHTML = "";
+
 }
 
 
-// =========================
-// ESCAPE HTML
-// =========================
+/* =========================
+   STATUS
+========================= */
+
+function getStatus(status) {
+
+  const statusMap = {
+
+    working:
+      "🟢 กำลังทำงาน",
+
+    waiting:
+      "🟡 รอคิว",
+
+    paused:
+      "🟠 พักงาน",
+
+    done:
+      "🔵 เสร็จแล้ว"
+
+  };
+
+
+  return (
+    statusMap[status] ||
+    status
+  );
+
+}
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
 
 function escapeHtml(value) {
 
@@ -596,11 +731,12 @@ function escapeHtml(value) {
       "'",
       "&#039;"
     );
+
 }
 
 
-// =========================
-// START
-// =========================
+/* =========================
+   START
+========================= */
 
 checkLogin();
