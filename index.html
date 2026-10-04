@@ -1,47 +1,25 @@
 <!doctype html>
 <html lang="th">
-
 <head>
-
   <meta charset="utf-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>PROCYSIS SHOP</title>
 
-  <link
-    rel="stylesheet"
-    href="style.css">
-
+  <link rel="stylesheet" href="./style.css">
 </head>
-
 
 <body>
 
-
 <header>
-
-  <b>
-    PROCYSIS <i>SHOP</i>
-  </b>
-
-  <a href="admin.html">
-    แอดมิน
-  </a>
-
+  <b>PROCYSIS <i>SHOP</i></b>
+  <a href="./admin.html">แอดมิน</a>
 </header>
-
 
 <main>
 
-
   <section class="hero">
-
-    <small>
-      PROCYSIS SHOP
-    </small>
+    <small>PROCYSIS SHOP</small>
 
     <h1>
       ตรวจสอบงาน
@@ -49,59 +27,43 @@
     </h1>
 
     <p>
-      กรอกรหัสงานเพื่อดูสถานะงานของคุณ
+      กรอกรหัสงานของคุณเพื่อดูความคืบหน้า
     </p>
-
   </section>
 
 
   <section class="card">
 
     <label>
-
       รหัสงาน
 
       <input
         id="code"
         type="text"
-        placeholder="เช่น PCS-1001"
-        autocomplete="off">
-
+        placeholder="เช่น 001"
+        autocomplete="off"
+      >
     </label>
 
-
-    <button
-      onclick="findJob()">
-
+    <button id="searchButton">
       🔍 ตรวจสอบงาน
-
     </button>
-
 
     <div
       id="result"
-      style="margin-top:20px;">
-
+      style="margin-top:20px;"
+    >
+      <p>กรุณากรอกรหัสงาน</p>
     </div>
 
   </section>
 
-
 </main>
 
 
-<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script
-  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-</script>
-
-
-<!-- APP -->
-
-<script src="app.js"></script>
-
+<script src="./app.js"></script>
 
 </body>
-
 </html>
