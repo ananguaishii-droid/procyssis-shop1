@@ -1,1 +1,152 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PROCYSIS SHOP Admin</title><link rel="stylesheet" href="style.css"></head><body><header><b>PROCYSIS <i>SHOP</i></b><a href="index.html">หน้าลูกค้า</a></header><main><section class="hero"><small>ADMIN CONTROL</small><h1>จัดการงาน <span>Real-time</span></h1></section><section class="card"><div class="grid"><label>รหัสงาน<input id="fcode" placeholder="PCS-1001"></label><label>ชื่องาน<input id="ftitle" placeholder="Roblox งานลูกค้า"></label><label>สถานะ<select id="fstatus"><option value="working">🟢 กำลังทำงาน</option><option value="waiting">🟡 รอคิว</option><option value="paused">🟠 พักงาน</option><option value="done">🔵 เสร็จแล้ว</option></select></label><label>ความคืบหน้า %<input id="fprogress" type="number" min="0" max="100" value="0"></label><label class="wide">ข้อความ<input id="fmessage" placeholder="กำลังดำเนินการ..."></label><label class="wide">Redfinger View URL<input id="fview" placeholder="URL ของภาพ/สตรีมที่อนุญาตให้ฝัง"></label></div><button onclick="saveJob()">บันทึกงาน</button><button class="dark" onclick="clearForm()">ล้าง</button><p id="msg"></p></section><section class="card"><h2>งานทั้งหมด</h2><div id="list"></div></section></main><script src="admin.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PROCYSIS SHOP Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <b>PROCYSIS <i>SHOP</i></b>
+  <a href="index.html">หน้าลูกค้า</a>
+</header>
+
+<main>
+
+  <!-- LOGIN -->
+  <section class="card" id="loginBox">
+    <h2>🔐 Admin Login</h2>
+
+    <label>
+      อีเมล
+      <input id="email" type="email" placeholder="อีเมลแอดมิน">
+    </label>
+
+    <label>
+      รหัสผ่าน
+      <input id="password" type="password" placeholder="รหัสผ่าน">
+    </label>
+
+    <button onclick="login()">เข้าสู่ระบบ</button>
+
+    <p id="loginMsg"></p>
+  </section>
+
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" style="display:none;">
+
+    <section class="hero">
+      <small>ADMIN CONTROL</small>
+      <h1>จัดการงาน <span>Real-time</span></h1>
+
+      <button class="dark" onclick="logout()">ออกจากระบบ</button>
+    </section>
+
+
+    <!-- JOB FORM -->
+    <section class="card">
+
+      <div class="grid">
+
+        <label>
+          รหัสงาน
+          <input id="fcode" placeholder="PCS-1001">
+        </label>
+
+        <label>
+          ชื่องาน
+          <input id="ftitle" placeholder="Roblox งานลูกค้า">
+        </label>
+
+        <label>
+          สถานะ
+
+          <select id="fstatus">
+            <option value="working">🟢 กำลังทำงาน</option>
+            <option value="waiting">🟡 รอคิว</option>
+            <option value="paused">🟠 พักงาน</option>
+            <option value="done">🔵 เสร็จแล้ว</option>
+          </select>
+
+        </label>
+
+        <label>
+          ความคืบหน้า %
+          <input
+            id="fprogress"
+            type="number"
+            min="0"
+            max="100"
+            value="0">
+        </label>
+
+        <label class="wide">
+          ข้อความ
+          <input
+            id="fmessage"
+            placeholder="กำลังดำเนินการ...">
+        </label>
+
+
+        <!-- IMAGE UPLOAD -->
+        <label class="wide">
+          รูปภาพงาน
+
+          <input
+            id="imageFile"
+            type="file"
+            accept="image/*">
+
+          <small>
+            เลือกรูปจาก iPad เพื่ออัปโหลดให้ลูกค้าดู
+          </small>
+
+          <div id="imagePreview"
+               style="margin-top:10px;"></div>
+        </label>
+
+
+        <!-- HIDDEN URL -->
+        <input
+          id="fview"
+          type="hidden"
+          value="">
+          
+      </div>
+
+
+      <button onclick="saveJob()">
+        💾 บันทึกงาน
+      </button>
+
+      <button class="dark" onclick="clearForm()">
+        ล้าง
+      </button>
+
+      <p id="msg"></p>
+
+    </section>
+
+
+    <!-- JOB LIST -->
+    <section class="card">
+
+      <h2>งานทั้งหมด</h2>
+
+      <div id="list"></div>
+
+    </section>
+
+  </div>
+
+</main>
+
+
+<script src="admin.js"></script>
+
+</body>
+</html>
