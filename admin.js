@@ -1,21 +1,17 @@
-const SUPABASE_URL = "https://ywaicpfgqejwfwkvetyj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
+const SUPABASE_URL =
+  "https://ywaicpfgqejwfwkvetyj.supabase.co";
 
-let supabaseClient;
-let currentUser = null;
+const SUPABASE_KEY =
+  "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
 
-function initSupabase() {
-  if (typeof supabase === "undefined") {
-    document.getElementById("loginMsg").textContent =
-      "กำลังโหลด Supabase...";
-    return;
-  }
 
-  supabaseClient = supabase.createClient(
+const supabaseClient =
+  window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
-}
+
+let currentUser = null;
 
 
 // =========================
@@ -25,38 +21,69 @@ function initSupabase() {
 async function login() {
 
   const email =
-    document.getElementById("email").value.trim();
+    document
+      .getElementById("email")
+      .value
+      .trim();
 
   const password =
-    document.getElementById("password").value;
+    document
+      .getElementById("password")
+      .value;
 
   const msg =
     document.getElementById("loginMsg");
 
   if (!email || !password) {
-    msg.textContent = "กรุณากรอกอีเมลและรหัสผ่าน";
+
+    msg.textContent =
+      "กรุณากรอกอีเมลและรหัสผ่าน";
+
     return;
   }
+
+
+  msg.textContent =
+    "กำลังเข้าสู่ระบบ...";
+
 
   const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+    await supabaseClient.auth
+      .signInWithPassword({
+
+        email: email,
+        password: password
+
+      });
+
 
   if (error) {
+
+    console.error(error);
+
     msg.textContent =
-      "เข้าสู่ระบบไม่สำเร็จ: " + error.message;
+      "เข้าสู่ระบบไม่สำเร็จ: " +
+      error.message;
+
     return;
   }
+
 
   currentUser = data.user;
 
-  document.getElementById("loginBox").style.display =
-    "none";
 
-  document.getElementById("adminPanel").style.display =
-    "block";
+  document
+    .getElementById("loginBox")
+    .style.display = "none";
+
+
+  document
+    .getElementById("adminPanel")
+    .style.display = "block";
+
+
+  msg.textContent = "";
+
 
   loadJobs();
 }
@@ -72,11 +99,25 @@ async function logout() {
 
   currentUser = null;
 
-  document.getElementById("adminPanel").style.display =
-    "none";
 
-  document.getElementById("loginBox").style.display =
-    "block";
+  document
+    .getElementById("adminPanel")
+    .style.display = "none";
+
+
+  document
+    .getElementById("loginBox")
+    .style.display = "block";
+
+
+  document
+    .getElementById("email")
+    .value = "";
+
+
+  document
+    .getElementById("password")
+    .value = "";
 }
 
 
@@ -86,18 +127,34 @@ async function logout() {
 
 async function checkLogin() {
 
-  const { data } =
-    await supabaseClient.auth.getSession();
+  const { data, error } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+  }
+
 
   if (data.session) {
 
-    currentUser = data.session.user;
+    currentUser =
+      data.session.user;
 
-    document.getElementById("loginBox").style.display =
-      "none";
 
-    document.getElementById("adminPanel").style.display =
-      "block";
+    document
+      .getElementById("loginBox")
+      .style.display = "none";
+
+
+    document
+      .getElementById("adminPanel")
+      .style.display = "block";
+
 
     loadJobs();
   }
@@ -108,23 +165,35 @@ async function checkLogin() {
 // IMAGE PREVIEW
 // =========================
 
-document.addEventListener("DOMContentLoaded", () => {
+document
+  .getElementById("imageFile")
+  .addEventListener(
+    "change",
+    function () {
 
-  const fileInput =
-    document.getElementById("imageFile");
+      const file =
+        this.files[0];
 
-  if (fileInput) {
+      const preview =
+        document.getElementById(
+          "imagePreview"
+        );
 
-    fileInput.addEventListener("change", () => {
 
-      const file = fileInput.files[0];
+      if (!file) {
 
-      if (!file) return;
+        preview.innerHTML = "";
+
+        return;
+      }
+
 
       const url =
         URL.createObjectURL(file);
 
-      document.getElementById("imagePreview").innerHTML = `
+
+      preview.innerHTML = `
+
         <img
           src="${url}"
           style="
@@ -133,45 +202,72 @@ document.addEventListener("DOMContentLoaded", () => {
             border-radius:12px;
             margin-top:10px;
           ">
+
       `;
-    });
-
-  }
-
-});
+    }
+  );
 
 
 // =========================
 // UPLOAD IMAGE
 // =========================
 
-async function uploadImage(file, code) {
+async function uploadImage(
+  file,
+  code
+) {
 
-  if (!file) return null;
+  if (!file) {
 
-  const extension =
-    file.name.split(".").pop().toLowerCase();
-
-  const fileName =
-    `jobs/${code}-${Date.now()}.${extension}`;
-
-  const { error: uploadError } =
-    await supabaseClient.storage
-      .from("job-images")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type
-      });
-
-  if (uploadError) {
-    throw uploadError;
+    return null;
   }
 
-  const { data } =
-    supabaseClient.storage
+
+  const extension =
+    file.name
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+
+  const fileName =
+    "jobs/" +
+    code +
+    "-" +
+    Date.now() +
+    "." +
+    extension;
+
+
+  const { error } =
+    await supabaseClient
+      .storage
       .from("job-images")
-      .getPublicUrl(fileName);
+      .upload(
+        fileName,
+        file,
+        {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type
+        }
+      );
+
+
+  if (error) {
+
+    throw error;
+  }
+
+
+  const { data } =
+    supabaseClient
+      .storage
+      .from("job-images")
+      .getPublicUrl(
+        fileName
+      );
+
 
   return data.publicUrl;
 }
@@ -186,83 +282,126 @@ async function saveJob() {
   const msg =
     document.getElementById("msg");
 
+
   try {
 
     if (!currentUser) {
+
       msg.textContent =
         "กรุณาเข้าสู่ระบบก่อน";
+
       return;
     }
 
+
     const code =
-      document.getElementById("fcode").value.trim();
+      document
+        .getElementById("fcode")
+        .value
+        .trim();
+
 
     const title =
-      document.getElementById("ftitle").value.trim();
+      document
+        .getElementById("ftitle")
+        .value
+        .trim();
+
 
     const status =
-      document.getElementById("fstatus").value;
+      document
+        .getElementById("fstatus")
+        .value;
+
 
     const progress =
       Number(
-        document.getElementById("fprogress").value
+        document
+          .getElementById("fprogress")
+          .value
       );
 
+
     const message =
-      document.getElementById("fmessage").value.trim();
+      document
+        .getElementById("fmessage")
+        .value
+        .trim();
+
 
     const file =
-      document.getElementById("imageFile").files[0];
+      document
+        .getElementById("imageFile")
+        .files[0];
+
 
     if (!code || !title) {
+
       msg.textContent =
         "กรุณากรอกรหัสงานและชื่องาน";
+
       return;
     }
+
 
     msg.textContent =
       "กำลังบันทึก...";
 
+
     let imageUrl = null;
+
 
     if (file) {
 
       msg.textContent =
         "กำลังอัปโหลดรูป...";
 
+
       imageUrl =
-        await uploadImage(file, code);
+        await uploadImage(
+          file,
+          code
+        );
     }
+
 
     const { error } =
       await supabaseClient
         .from("jobs")
-        .upsert({
+        .upsert(
 
-          code: code,
-          title: title,
-          status: status,
-          progress: progress,
-          message: message,
-          view_url: imageUrl,
+          {
+            code: code,
+            title: title,
+            status: status,
+            progress: progress,
+            message: message,
+            view_url: imageUrl,
+            updated_at:
+              new Date().toISOString()
+          },
 
-          updated_at:
-            new Date().toISOString()
+          {
+            onConflict: "code"
+          }
 
-        }, {
-          onConflict: "code"
-        });
+        );
+
 
     if (error) {
+
       throw error;
     }
+
 
     msg.textContent =
       "✅ บันทึกงานเรียบร้อย";
 
+
     clearForm();
 
     loadJobs();
+
 
   } catch (error) {
 
@@ -284,26 +423,34 @@ async function loadJobs() {
   const list =
     document.getElementById("list");
 
+
   list.innerHTML =
     "กำลังโหลด...";
+
 
   const { data, error } =
     await supabaseClient
       .from("jobs")
       .select("*")
-      .order("created_at", {
-        ascending: false
-      });
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
 
   if (error) {
 
-    list.innerHTML =
-      "โหลดข้อมูลไม่สำเร็จ";
-
     console.error(error);
+
+    list.innerHTML =
+      "❌ โหลดข้อมูลไม่สำเร็จ: " +
+      error.message;
 
     return;
   }
+
 
   if (!data || data.length === 0) {
 
@@ -313,69 +460,107 @@ async function loadJobs() {
     return;
   }
 
+
   list.innerHTML =
-    data.map(job => `
+    data
+      .map(function (job) {
 
-      <div class="card"
-           style="margin-top:15px;">
+        return `
 
-        <b>${escapeHtml(job.code)}</b>
+          <div
+            class="card"
+            style="margin-top:15px;">
 
-        <div>
-          ${escapeHtml(job.title)}
-        </div>
+            <b>
+              ${escapeHtml(job.code)}
+            </b>
 
-        <div>
-          สถานะ: ${escapeHtml(job.status)}
-        </div>
+            <div>
+              ${escapeHtml(job.title)}
+            </div>
 
-        <div>
-          ความคืบหน้า: ${job.progress}%
-        </div>
+            <div>
+              สถานะ:
+              ${escapeHtml(job.status)}
+            </div>
 
-        <div>
-          ${escapeHtml(job.message || "")}
-        </div>
+            <div>
+              ความคืบหน้า:
+              ${job.progress}%
+            </div>
 
-        ${
-          job.view_url
-          ? `
-            <img
-              src="${job.view_url}"
-              style="
-                max-width:100%;
-                max-height:250px;
-                margin-top:10px;
-                border-radius:10px;
-              ">
-          `
-          : ""
-        }
+            <div>
+              ${escapeHtml(
+                job.message || ""
+              )}
+            </div>
 
-      </div>
+            ${
+              job.view_url
 
-    `).join("");
+              ? `
+
+                <img
+                  src="${job.view_url}"
+                  style="
+                    max-width:100%;
+                    max-height:250px;
+                    margin-top:10px;
+                    border-radius:10px;
+                  ">
+
+              `
+
+              : ""
+            }
+
+          </div>
+
+        `;
+      })
+      .join("");
 }
 
 
 // =========================
-// CLEAR FORM
+// CLEAR
 // =========================
 
 function clearForm() {
 
-  document.getElementById("fcode").value = "";
-  document.getElementById("ftitle").value = "";
-  document.getElementById("fstatus").value = "working";
-  document.getElementById("fprogress").value = 0;
-  document.getElementById("fmessage").value = "";
-  document.getElementById("imageFile").value = "";
+  document
+    .getElementById("fcode")
+    .value = "";
 
-  document.getElementById("imagePreview").innerHTML =
-    "";
 
-  document.getElementById("msg").textContent =
-    "";
+  document
+    .getElementById("ftitle")
+    .value = "";
+
+
+  document
+    .getElementById("fstatus")
+    .value = "working";
+
+
+  document
+    .getElementById("fprogress")
+    .value = 0;
+
+
+  document
+    .getElementById("fmessage")
+    .value = "";
+
+
+  document
+    .getElementById("imageFile")
+    .value = "";
+
+
+  document
+    .getElementById("imagePreview")
+    .innerHTML = "";
 }
 
 
@@ -386,11 +571,31 @@ function clearForm() {
 function escapeHtml(value) {
 
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
 
 
@@ -398,18 +603,4 @@ function escapeHtml(value) {
 // START
 // =========================
 
-const script =
-  document.createElement("script");
-
-script.src =
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-
-script.onload = () => {
-
-  initSupabase();
-
-  checkLogin();
-
-};
-
-document.head.appendChild(script);
+checkLogin();
