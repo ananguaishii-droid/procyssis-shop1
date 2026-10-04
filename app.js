@@ -4,6 +4,7 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
 
+
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
@@ -11,76 +12,144 @@ const supabaseClient =
   );
 
 
-// =========================
-// ค้นหางาน
-// =========================
+const codeInput =
+  document.getElementById("code");
+
+const searchButton =
+  document.getElementById("searchButton");
+
+const result =
+  document.getElementById("result");
+
+
+/* =========================
+   ปุ่มค้นหางาน
+========================= */
+
+searchButton.addEventListener(
+  "click",
+  findJob
+);
+
+
+codeInput.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+      findJob();
+    }
+
+  }
+);
+
+
+/* =========================
+   ค้นหางาน
+========================= */
 
 async function findJob() {
 
   const code =
-    document
-      .getElementById("code")
-      .value
-      .trim();
-
-  const result =
-    document.getElementById("result");
+    codeInput.value.trim();
 
 
   if (!code) {
 
-    result.innerHTML =
-      "กรุณากรอกรหัสงาน";
+    result.innerHTML = `
+      <div class="card">
+        ❌ กรุณากรอกรหัสงาน
+      </div>
+    `;
 
     return;
   }
 
 
-  result.innerHTML =
-    "กำลังค้นหา...";
+  result.innerHTML = `
+    <div class="card">
+      🔄 กำลังค้นหารหัสงาน
+      <b>${escapeHtml(code)}</b>...
+    </div>
+  `;
 
 
-  const { data, error } =
-    await supabaseClient
-      .from("jobs")
-      .select("*")
-      .eq("code", code)
-      .maybeSingle();
+  try {
+
+    const response =
+      await supabaseClient
+        .from("jobs")
+        .select("*")
+        .eq("code", code)
+        .maybeSingle();
 
 
-  if (error) {
+    const data =
+      response.data;
+
+    const error =
+      response.error;
+
+
+    if (error) {
+
+      console.error(
+        "Supabase error:",
+        error
+      );
+
+      result.innerHTML = `
+        <div class="card">
+          ❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล
+          <br><br>
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+
+      return;
+    }
+
+
+    if (!data) {
+
+      result.innerHTML = `
+        <div class="card">
+          ❌ ไม่พบรหัสงาน
+          <br><br>
+          <b>${escapeHtml(code)}</b>
+        </div>
+      `;
+
+      return;
+    }
+
+
+    showJob(data);
+
+  }
+
+  catch (error) {
 
     console.error(error);
 
-    result.innerHTML =
-      "❌ ไม่สามารถค้นหางานได้";
+    result.innerHTML = `
+      <div class="card">
+        ❌ เกิดข้อผิดพลาด
+        <br><br>
+        ${escapeHtml(error.message)}
+      </div>
+    `;
 
-    return;
   }
 
-
-  if (!data) {
-
-    result.innerHTML =
-      "❌ ไม่พบรหัสงานนี้";
-
-    return;
-  }
-
-
-  showJob(data);
 }
 
 
-// =========================
-// แสดงงาน
-// =========================
+/* =========================
+   แสดงข้อมูลงาน
+========================= */
 
 function showJob(job) {
-
-  const result =
-    document.getElementById("result");
-
 
   let image = "";
 
@@ -88,20 +157,30 @@ function showJob(job) {
   if (job.view_url) {
 
     image = `
-
       <img
-        src="${job.view_url}"
+        src="${escapeAttribute(job.view_url)}"
         alt="รูปงาน"
         style="
           width:100%;
           max-width:700px;
+          display:block;
+          margin:18px auto 0;
           border-radius:15px;
-          margin-top:15px;
         "
       >
-
     `;
+
   }
+
+
+  const progress =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number(job.progress) || 0
+      )
+    );
 
 
   result.innerHTML = `
@@ -112,61 +191,83 @@ function showJob(job) {
         ${escapeHtml(job.title)}
       </h2>
 
+
       <p>
         รหัสงาน:
         <b>${escapeHtml(job.code)}</b>
       </p>
 
+
       <p>
         สถานะ:
-        ${getStatus(job.status)}
+        <b>${getStatus(job.status)}</b>
       </p>
+
 
       <p>
         ความคืบหน้า:
-        ${job.progress}%
+        <b>${progress}%</b>
       </p>
+
 
       <div
         style="
           width:100%;
-          background:#eee;
-          height:12px;
+          height:14px;
+          background:#e5e7eb;
           border-radius:20px;
           overflow:hidden;
+          margin:12px 0;
         "
       >
 
         <div
           style="
-            width:${job.progress}%;
+            width:${progress}%;
             height:100%;
             background:#4da6ff;
+            border-radius:20px;
+            transition:width .4s;
           "
         ></div>
 
       </div>
 
-      <p>
-        ${escapeHtml(job.message || "")}
-      </p>
+
+      <div
+        style="
+          background:#f5f8fc;
+          padding:15px;
+          border-radius:12px;
+          margin-top:15px;
+        "
+      >
+
+        ${escapeHtml(job.message || "ไม่มีข้อความ")}
+
+      </div>
+
 
       ${image}
 
-      <small>
-        อัปเดตล่าสุด:
+
+      <p style="margin-top:15px;opacity:.7;">
+
+        🕐 อัปเดตล่าสุด:
         ${formatDate(job.updated_at)}
-      </small>
+
+      </p>
 
     </div>
 
   `;
+
 }
 
 
-// =========================
-// สถานะ
-// =========================
+/* =========================
+   สถานะงาน
+========================= */
 
 function getStatus(status) {
 
@@ -189,34 +290,49 @@ function getStatus(status) {
 
   return (
     statusMap[status] ||
-    status
+    status ||
+    "ไม่ทราบสถานะ"
   );
+
 }
 
 
-// =========================
-// วันที่
-// =========================
+/* =========================
+   เวลา
+========================= */
 
 function formatDate(date) {
 
-  if (!date) return "-";
+  if (!date) {
+    return "-";
+  }
 
 
-  return new Date(date)
-    .toLocaleString(
-      "th-TH",
-      {
-        dateStyle: "medium",
-        timeStyle: "short"
-      }
-    );
+  try {
+
+    return new Date(date)
+      .toLocaleString(
+        "th-TH",
+        {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }
+      );
+
+  }
+
+  catch {
+
+    return date;
+
+  }
+
 }
 
 
-// =========================
-// ป้องกัน HTML
-// =========================
+/* =========================
+   ป้องกัน HTML แปลก ๆ
+========================= */
 
 function escapeHtml(value) {
 
@@ -246,14 +362,23 @@ function escapeHtml(value) {
       "'",
       "&#039;"
     );
+
 }
 
 
-// =========================
-// REAL-TIME
-// =========================
+function escapeAttribute(value) {
+
+  return escapeHtml(value);
+
+}
+
+
+/* =========================
+   Real-time
+========================= */
 
 supabaseClient
+
   .channel("jobs-realtime")
 
   .on(
@@ -263,20 +388,40 @@ supabaseClient
       schema: "public",
       table: "jobs"
     },
-    () => {
 
-      const code =
-        document
-          .getElementById("code")
-          .value
-          .trim();
+    function(payload) {
+
+      console.log(
+        "Real-time update:",
+        payload
+      );
 
 
-      if (code) {
-        findJob();
+      const currentCode =
+        codeInput.value.trim();
+
+
+      if (!currentCode) {
+        return;
       }
+
+
+      /*
+       * โหลดข้อมูลใหม่ทันที
+       */
+
+      findJob();
 
     }
   )
 
-  .subscribe();
+  .subscribe(
+    function(status) {
+
+      console.log(
+        "Realtime:",
+        status
+      );
+
+    }
+  );
