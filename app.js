@@ -5,20 +5,12 @@ const SUPABASE_KEY =
   "sb_publishable_TVwTkLYOgFadiLVpfvZ5sQ_qZoFZoGU";
 
 
-/* =========================
-   CONNECT SUPABASE
-========================= */
-
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
 
-
-/* =========================
-   ELEMENTS
-========================= */
 
 const codeInput =
   document.getElementById("code");
@@ -71,10 +63,7 @@ async function findJob() {
   if (!code) {
 
     result.innerHTML = `
-      <div
-        class="card"
-        style="color:#222222;"
-      >
+      <div class="card">
 
         <h3>⚠️ กรุณากรอกรหัสงาน</h3>
 
@@ -91,10 +80,7 @@ async function findJob() {
 
 
   result.innerHTML = `
-    <div
-      class="card"
-      style="color:#222222;"
-    >
+    <div class="card">
 
       🔄 กำลังค้นหางาน
       <b>${escapeHtml(code)}</b>...
@@ -127,10 +113,7 @@ async function findJob() {
 
 
       result.innerHTML = `
-        <div
-          class="card"
-          style="color:#222222;"
-        >
+        <div class="card">
 
           <h3>❌ เกิดข้อผิดพลาด</h3>
 
@@ -150,10 +133,7 @@ async function findJob() {
     if (!data) {
 
       result.innerHTML = `
-        <div
-          class="card"
-          style="color:#222222;"
-        >
+        <div class="card">
 
           <h3>❌ ไม่พบงาน</h3>
 
@@ -179,10 +159,7 @@ async function findJob() {
 
 
     result.innerHTML = `
-      <div
-        class="card"
-        style="color:#222222;"
-      >
+      <div class="card">
 
         <h3>❌ ไม่สามารถโหลดงานได้</h3>
 
@@ -259,75 +236,40 @@ function showJob(job) {
 
   result.innerHTML = `
 
-    <div
-      class="card"
-      style="
-        color:#222222;
-      "
-    >
+    <div class="card">
 
-      <!-- TITLE -->
-
-      <h2
-        style="
-          color:#111111;
-        "
-      >
+      <h2>
         ${escapeHtml(
           job.title
         )}
       </h2>
 
 
-      <!-- CODE -->
-
-      <p
-        style="
-          color:#222222;
-        "
-      >
-
+      <p>
         รหัสงาน:
         <b>
           ${escapeHtml(
             job.code
           )}
         </b>
-
       </p>
 
 
-      <!-- STATUS -->
-
-      <p
-        style="
-          color:#222222;
-        "
-      >
-
+      <p>
         สถานะ:
         <b>
           ${getStatus(
             job.status
           )}
         </b>
-
       </p>
 
 
-      <!-- PROGRESS -->
-
-      <p
-        style="
-          color:#222222;
-        "
-      >
-
+      <p>
         ความคืบหน้า:
         <b>
           ${progress}%
         </b>
-
       </p>
 
 
@@ -337,7 +279,7 @@ function showJob(job) {
         style="
           width:100%;
           height:14px;
-          background:#e5e7eb;
+          background:#eee;
           border-radius:20px;
           overflow:hidden;
           margin:10px 0 20px;
@@ -364,9 +306,8 @@ function showJob(job) {
           margin-top:20px;
           padding:18px;
           background:#f5f8fc;
-          color:#222222;
           border-radius:15px;
-          border:1px solid #dfe5ec;
+          border:1px solid #e5eaf0;
         "
       >
 
@@ -375,7 +316,7 @@ function showJob(job) {
             font-weight:bold;
             font-size:17px;
             margin-bottom:10px;
-            color:#111111;
+            color:#222222;
           "
         >
           📝 ข้อความจากแอดมิน
@@ -409,7 +350,7 @@ function showJob(job) {
       <p
         style="
           margin-top:18px;
-          color:#666666;
+          opacity:.65;
           font-size:13px;
         "
       >
@@ -598,12 +539,7 @@ supabaseClient
 
           result.innerHTML = `
 
-            <div
-              class="card"
-              style="
-                color:#222222;
-              "
-            >
+            <div class="card">
 
               <h3>
                 🗑️ งานนี้ถูกลบแล้ว
@@ -628,7 +564,7 @@ supabaseClient
       }
 
 
-      /* ตรวจเฉพาะงานที่กำลังดู */
+      /* ถ้าเป็นงานอื่น ไม่ต้องรีเฟรช */
 
       if (
         payload.new &&
